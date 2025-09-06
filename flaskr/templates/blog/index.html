@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Blog Home Page</title>
+</head>
+<body>
+  <h1>Welcome to the Blog</h1>
+  <a href="/login">Login</a>
+  <a href="/register">Register</a>
+  <a href="/blog/create">Create a New Post</a>
+  <div id="posts">
+    <!-- Blog posts will be listed here -->
+    {% for blog in blogs %}
+      <div class="post">
+        <h2>{{ blog.title }}</h2>
+        <p>{{ blog.content }}</p>
+      </div>
+    {% endfor %}
+  </div>
+</body>
+</html>
