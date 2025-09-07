@@ -1,23 +1,28 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Blog Home Page</title>
-</head>
-<body>
-  <h1>Welcome to the Blog</h1>
-  <a href="/login">Login</a>
-  <a href="/register">Register</a>
-  <a href="/blog/create">Create a New Post</a>
-  <div id="posts">
-    <!-- Blog posts will be listed here -->
-    {% for blog in blogs %}
-      <div class="post">
-        <h2>{{ blog.title }}</h2>
-        <p>{{ blog.content }}</p>
-      </div>
-    {% endfor %}
-  </div>
-</body>
-</html>
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}Welcome to the Blog{% endblock %}</h1>
+{% if g.user %}
+    <a class="action" href="/create">New</a>
+{% endif %}
+{% endblock %}
+  
+{% block content %}
+  {% for blog in blogs %}
+    <article class="blog">
+      <header>
+        <div>
+          <h1>{{ blog['title'] }}</h1>
+          <div class="about">by {{ blog['username'] }} on {{ blog['created'].strftime('%Y-%m-%d') }}</div>
+        </div>
+        {% if g.user['id'] == blog['author_id'] %}
+          <a class="action" href="{{ url_for('blog.update', id=blog['id']) }}">Edit</a>
+        {% endif %}
+      </header>
+      <p class="body">{{ blog['body'] }}</p>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

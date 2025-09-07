@@ -21,7 +21,7 @@ def register():
       error = 'Username and password are required.'
     else:
       try:
-        db.execute(
+        db.cursor().execute(
           "INSERT INTO users (username, password) VALUES (%s, %s)",
           (username, generate_password_hash(password))
           )
@@ -43,9 +43,11 @@ def login():
     password = request.form['password']
     db = get_db()
     error = None
-    user = db.execute(
-      'SELECT * FROM users WHERE username = ?', (username,)
-    ).fetchone()
+    with db.cursor() as cur:
+      user = cur.execute('SELECT * FROM users WHERE username = %s;', (username,))
+      print(user)
+      user = cur.fetchone()
+      print(user)
 
     if user is None:
       error = 'Incorrect username.'
@@ -55,7 +57,7 @@ def login():
     if error is None:
       session.clear()
       session['user_id'] = user['id']
-      return redirect(url_for('blog.index'))
+      return redirect(url_for('index'))
 
     flash(error)
 
@@ -68,14 +70,16 @@ def load_logged_in_user():
   if user_id is None:
     g.user = None
   else:
-    g.user = get_db().execute(
-      'SELECT * FROM users WHERE id = ?', (user_id,)
-    ).fetchone()
+    with get_db().cursor() as cur:
+      cur.execute(
+        'SELECT * FROM users WHERE id = %s', (user_id,)
+      )
+      g.user = cur.fetchone()
 
 @bp.route('/logout')
 def logout():
   session.clear()
-  return redirect(url_for('blog.index'))
+  return redirect(url_for('index'))
 
 def login_required(view):
   @functools.wraps(view)
@@ -86,3 +90,4 @@ def login_required(view):
     return view(**kwargs)
 
   return wrapped_view
+

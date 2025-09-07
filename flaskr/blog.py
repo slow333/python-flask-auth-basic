@@ -1,39 +1,106 @@
+from tkinter import INSERT
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for
+    Blueprint, abort, flash, g, redirect, render_template, request, url_for
 )
-
+from werkzeug.exceptions import abort
+from flaskr.auth import login_required
 from flaskr.db import get_db
 
-bp = Blueprint('blog', __name__, url_prefix='/blog')
+bp = Blueprint('blog', __name__)
+
+@bp.route('/')
+def index():
+  db = get_db()
+  with db.cursor() as cursor:
+    blogs = cursor.execute(
+      'SELECT b.id, title, body, created, author_id, username'
+      ' FROM blog b JOIN users u ON b.author_id = u.id'
+      ' ORDER BY created DESC'
+    )
+    # db.commit()
+    blogs = cursor.fetchall()
+
+  return render_template('blog/index.html', blogs=blogs)
 
 @bp.route('/create', methods=('GET', 'POST'))
-def create_post():
+@login_required
+def create_blog_post():
   if request.method == 'POST':
     title = request.form['title']
-    content = request.form['content']
-    db = get_db()
+    body = request.form['body']
     error = None
 
     if not title:
       error = 'Title is required.'
-    elif not content:
-      error = 'Content is required.'
+
+    if error is not None:
+      flash(error)
     else:
-      try:
-        with db.cursor() as cur:
-          cur.execute(
-            "INSERT INTO blog (title, content) VALUES (%s, %s)",
-            (title, content)
-          )
-          cur.execute("SELECT * FROM blog ORDER BY created DESC")
-          blogs = cur.fetchall()
-        db.commit()
-      except db.IntegrityError:
-        error = f"Post with title {title} already exists."
-
-    if error is None:
-      return redirect(url_for('blog.index'), blogs=blogs)
-
-    flash(error)
+      db = get_db()
+      db.cursor().execute(
+          'INSERT INTO blog (title, body, author_id) VALUES (%s, %s, %s)',
+          (title, body, g.user['id'])
+        )
+      db.commit()
+      return redirect(url_for('blog.index'))
 
   return render_template('blog/create.html')
+
+def get_blog(id, check_author=True):
+  db = get_db()
+  with db.cursor() as cursor:
+    blog = cursor.execute(
+      'SELECT b.id, title, body, created, author_id, username'
+      ' FROM blog b JOIN users u ON b.author_id = u.id'
+      ' WHERE b.id = %s',
+      (id,)
+    )
+    blog = cursor.fetchone()
+
+  if blog is None:
+      abort(404, f"Blog id {id} doesn't exist.")
+
+  if check_author and blog['author_id'] != g.user['id']:
+      abort(403) #Forbidden
+
+  return blog
+
+@bp.route('/<int:id>/update', methods=('GET', 'POST'))
+@login_required
+def update(id):
+  blog = get_blog(id)
+
+  if request.method == 'POST':
+    title = request.form['title']
+    body = request.form['body']
+    error = None
+
+    if not title:
+      error = 'Title is required.'
+
+    if error is not None:
+      flash(error)
+    else:
+      db = get_db()
+      db.cursor().execute(
+          'UPDATE blog SET title = %s, body = %s'
+          ' WHERE id = %s',
+          (title, body, id)
+        )
+      db.commit()
+      
+      return redirect(url_for('index'))
+
+  return render_template('blog/update.html', blog=blog)
+
+@bp.route('/<int:id>/delete', methods=('POST',))
+@login_required
+def delete(id):
+  get_blog(id)
+  db = get_db()
+  db.cursor().execute(
+    'DELETE FROM blog WHERE id = %s',
+    (id,)
+  )
+  db.commit()
+  return redirect(url_for('blog.index'))

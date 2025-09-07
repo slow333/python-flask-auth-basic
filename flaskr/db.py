@@ -31,13 +31,11 @@ def init_db():
   # Commit the changes to make them persistent
   db.commit()
 
-
 @click.command('init-db')
 def init_db_command():
   """Clear the existing data and create new tables."""
   init_db()
   click.echo('Initialized the PostgreSQL database.')
-
 
 def init_app(app):
   """Register database functions with the Flask app."""
