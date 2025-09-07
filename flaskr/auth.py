@@ -45,9 +45,7 @@ def login():
     error = None
     with db.cursor() as cur:
       user = cur.execute('SELECT * FROM users WHERE username = %s;', (username,))
-      print(user)
       user = cur.fetchone()
-      print(user)
 
     if user is None:
       error = 'Incorrect username.'
