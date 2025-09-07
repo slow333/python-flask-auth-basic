@@ -57,7 +57,7 @@ def create_app(test_config=None):
 ```
 ### run app : flask --app flaskr run --debug
 
-### database 연결 설정
+### database 연결 설정(psycopg2)
 ```
 flaskr/db.py
 from flask import current_app, g
@@ -86,13 +86,11 @@ def init_db():
   # Commit the changes to make them persistent
   db.commit()
 
-
 @click.command('init-db')
 def init_db_command():
   """Clear the existing data and create new tables."""
   init_db()
   click.echo('Initialized the PostgreSQL database.')
-
 
 def init_app(app):
   """Register database functions with the Flask app."""
@@ -104,7 +102,50 @@ def init_app(app):
     from . import db
     db.init_app(app)
 ```
-g is a special object that is unique for each request. It is used to store data that might be accessed by multiple functions during the request. The connection is stored and reused instead of creating a new connection if get_db is called a second time in the same request.
+### g is a special object that is unique for each request. It is used to store data that might be accessed by multiple functions during the request. The connection is stored and reused instead of creating a new connection if get_db is called a second time in the same request.
 
 ### run : flask --app flaskr init-db
 
+### psycopg2에서 query 객체를 dict처럼 사용 가능하나 (user['id'])
+> 여기서는 with conn.cursor() as cur: cur.execute('sql')
+### sqlalchemy에서는 qeury 객체를 dict 처럼 안되고 tuple처럼 해야함(user[0])
+> 여기서는 with engine.connect() as conn: conn.execute('sql')
+## flask 버전에 따라 프로젝트에서 db sesstion 연결하는 방식이 다름
+
+## 주의 할점
+### 공통으로 select 처럼 return 값이 있으면 with 에서 fetch를 수행해야 하고,
+> sqlalchemy
+```
+session_db = get_db()
+session_db.execute(
+    text('INSERT INTO blog (title, body, author_id) VALUES (:title, :body, :author_id)'),
+    {'title': title, 'body': body, 'author_id': g.user['id']}
+)
+session_db.commit()
+
+session_db = get_db()
+result = session_db.execute(text(
+  'SELECT b.id, title, body, created, author_id, username'
+  ' FROM blog b JOIN users u ON b.author_id = u.id'
+  ' ORDER BY created DESC'
+))
+blogs = result.fetchall()
+```
+> psycopg2
+```
+db = get_db()
+db.cursor().execute(
+  'UPDATE blog SET title = %s, body = %s  WHERE id = %s',
+  (title, body, id)
+)
+db.commit()
+
+session_db = get_db()
+result = session_db.execute(text(
+  'SELECT b.id, title, body, created, author_id, username'
+  ' FROM blog b JOIN users u ON b.author_id = u.id'
+  ' ORDER BY created DESC'
+))
+blogs = result.fetchall()
+return render_template('blog/index.html', blogs=blogs)
+```

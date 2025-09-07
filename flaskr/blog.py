@@ -1,4 +1,3 @@
-from tkinter import INSERT
 from flask import (
     Blueprint, abort, flash, g, redirect, render_template, request, url_for
 )
@@ -89,7 +88,7 @@ def update(id):
         )
       db.commit()
       
-      return redirect(url_for('index'))
+      return redirect("/")
 
   return render_template('blog/update.html', blog=blog)
 
