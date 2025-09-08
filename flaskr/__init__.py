@@ -2,7 +2,6 @@ import os
 
 from flask import Flask, render_template
 from . import auth
-from . import blog
 
 def create_app(test_config=None):
     # create and configure the app
@@ -36,9 +35,5 @@ def create_app(test_config=None):
     from . import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
-
-    @app.route('/hello')
-    def hello():
-        return 'Hello, World!'
 
     return app
