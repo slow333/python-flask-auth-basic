@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}MY JOBs TODO app{% endblock %}</h1>
+{% if g.user %}
+    <a class="action" href="/todo/create">New</a>
+{% endif %}
+{% endblock %}
+  
+{% block content %}
+  {% for todo in todos %}
+    <article class="todo">
+      <div class="todo-item">
+        <div>
+          <h3>{{ todo['job'] }} <input type="checkbox" {% if todo['done'] %} checked {% endif %} ></h3>
+          <div class="todo-info">by {{ todo['username'] }} on {{ todo['created'].strftime('%Y-%m-%d') }}
+            end: {{ todo['end_date'].strftime('%Y-%m-%d') }}
+          </div>
+        </div>
+        <div>
+        {% if g.user['id'] == todo['create_id'] %}
+          <a class="action" href="/todo/{{ todo['id'] }}/update">Edit</a>
+          <a class="action" href="/todo/{{ todo['id'] }}/delete">Delete</a>
+        {% endif %}
+        </div>
+      </div>
+      <p class="body">{{ todo['body'] }}</p>
+    </article>
+    {% if not loop.last %}
+      <hr>
+    {% endif %}
+  {% endfor %}
+{% endblock %}

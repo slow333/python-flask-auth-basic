@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}update Todo{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form action="/todo/{{ todo['id'] }}/delete" method="post">
+    <input type="submit" value="Delete">
+  </form>
+  </form>
+{% endblock %}

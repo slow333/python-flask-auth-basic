@@ -21,12 +21,6 @@ def create_app(test_config=None):
         # load the test config if passed in
         app.config.from_mapping(test_config)
 
-    # ensure the instance folder exists
-    # try:
-    #     os.makedirs(app.instance_path)
-    # except OSError:
-    #     pass
-
     from . import db
     db.init_app(app)
 
@@ -35,5 +29,12 @@ def create_app(test_config=None):
     from . import blog
     app.register_blueprint(blog.bp)
     app.add_url_rule('/', endpoint='index')
+
+    from . import todo
+    app.register_blueprint(todo.bp)
+
+    @app.route('/home')
+    def home():
+        return render_template('home.html')
 
     return app

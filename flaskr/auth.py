@@ -30,7 +30,7 @@ def register():
         error = f"User {username} is already registered."
 
     if error is None:
-      return redirect(url_for('auth.login'))
+      return redirect("/auth/login")
 
     flash(error)
 
@@ -44,9 +44,8 @@ def login():
     db = get_db()
     error = None
     with db.cursor() as cur:
-      user = cur.execute('SELECT * FROM users WHERE username = %s;', (username,))
+      cur.execute('SELECT * FROM users WHERE username = %s;', (username,))
       user = cur.fetchone()
-      print(user)
 
     if user is None:
       error = 'Incorrect username.'
@@ -56,7 +55,7 @@ def login():
     if error is None:
       session.clear()
       session['user_id'] = user['id']
-      return redirect(url_for('index'))
+      return redirect("/home")
 
     flash(error)
 
@@ -78,13 +77,13 @@ def load_logged_in_user():
 @bp.route('/logout')
 def logout():
   session.clear()
-  return redirect(url_for('index'))
+  return redirect("/home")
 
 def login_required(view):
   @functools.wraps(view)
   def wrapped_view(**kwargs):
     if g.user is None:
-      return redirect(url_for('auth.login'))
+      return redirect("/auth/login")
 
     return view(**kwargs)
 

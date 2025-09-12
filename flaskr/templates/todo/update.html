@@ -1,0 +1,19 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}update Todo{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="job">Job</label>
+    <input name="job" id="job" value="{{ todo['job'] }}" required>
+    <label for="end_date">End Date
+      <input type="date" name="end_date" id="end_date" value="{{ todo['end_date'] }}">
+    </label>
+    <label for="done">Done
+      <input type="checkbox" name="done" id="done" {% if todo['done'] %} checked {% endif %}>      
+    </label>
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}

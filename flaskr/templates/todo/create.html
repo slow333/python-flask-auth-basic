@@ -1,0 +1,15 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}New Todo{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <form method="post">
+    <label for="job">Job</label>
+    <input name="job" id="job" value="{{ request.form['job'] }}" required>
+    <label for="end_date">End Date</label>
+    <input type="date" name="end_date" id="end_date" value="{{ request.form['end_date'] }}" >
+    <input type="submit" value="Save">
+  </form>
+{% endblock %}
