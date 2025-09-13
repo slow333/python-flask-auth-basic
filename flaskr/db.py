@@ -9,7 +9,6 @@ DATABASE = 'postgresql://postgres:1111@localhost/flaskr'
 def get_db():
   """Get a database connection from the application context."""
   if 'db' not in g:
-    # Establish a connection to the PostgreSQL database
     g.db = psycopg2.connect(DATABASE, cursor_factory=psycopg2.extras.DictCursor)
   return g.db
 

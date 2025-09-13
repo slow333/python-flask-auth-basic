@@ -149,3 +149,14 @@ result = session_db.execute(text(
 blogs = result.fetchall()
 return render_template('blog/index.html', blogs=blogs)
 ```
+# set env run script
+```
+$ cat ~/.bashrc
+alias start="source /b/python/flask-tutorial/.venv/Scripts/activate"
+alias run="flask --app flaskr run --debug"
+```
+
+# flask_crud 
+### To run the app, 
+### bash: export FLASK_APP=pybo, export FLASK_DEBUG=true , flask run
+### cmd : set FLASK_APP=pybo, set FLASK_DEBUG=true, flask run

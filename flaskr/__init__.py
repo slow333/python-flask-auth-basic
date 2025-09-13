@@ -1,7 +1,8 @@
 import os
 
+from .utils.template import body_template as body, getNav as nav, topics
 from flask import Flask, render_template
-from . import auth
+from .bp import auth
 
 def create_app(test_config=None):
     # create and configure the app
@@ -26,15 +27,30 @@ def create_app(test_config=None):
 
     app.register_blueprint(auth.bp)
 
-    from . import blog
+    from .bp import blog
     app.register_blueprint(blog.bp)
-    app.add_url_rule('/', endpoint='index')
+    # app.add_url_rule('/', endpoint='index')
 
-    from . import todo
+    from .bp import todo
     app.register_blueprint(todo.bp)
 
-    @app.route('/home')
+    from .bp import topic_nodb
+    app.register_blueprint(topic_nodb.bp)
+
+    # a simple page that says hello
+
+    @app.route('/')
     def home():
         return render_template('home.html')
+    
+    @app.route("/install")
+    def install():
+        return body(nav(topics), render_template("install.html"))
 
     return app
+
+# if __name__ == "__main__":
+# app.run(debug=True, host='0.0.0.0', port=5000)
+# To run the app, 
+# bash: export FLASK_APP=pybo, export FLASK_DEBUG=true , flask run
+# cmd : set FLASK_APP=pybo, set FLASK_DEBUG=true, flask run
